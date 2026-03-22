@@ -1,0 +1,14 @@
+node_modules/
+.next/
+out/
+dist/
+.DS_Store
+*.log
+.env
+.env.local
+.claude-flow/
+
+# Agnotita output directories
+scraper/output/
+generator/output/
+pipeline/crm/
