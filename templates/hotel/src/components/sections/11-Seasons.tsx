@@ -1,74 +1,120 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useState, useRef } from "react";
+import { motion, AnimatePresence, useInView } from "framer-motion";
 import type { Season } from "@/data/sample";
 
 interface SeasonsProps {
   seasons: Season[];
   city: string;
+  gallery: string[];
 }
 
-export function Seasons({ seasons, city }: SeasonsProps) {
-  return (
-    <section className="bg-ivory py-24 md:py-32">
-      <div className="mx-auto max-w-6xl px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-16 text-center"
-        >
-          <h2 className="font-serif text-sm font-medium tracking-[0.3em] uppercase text-gold">
-            When to Visit
-          </h2>
-          <p className="mt-4 font-serif text-3xl font-light text-charcoal md:text-4xl">
-            {city} through the seasons
-          </p>
-        </motion.div>
+const seasonColors: Record<string, string> = {
+  Spring: "rgba(180, 200, 140, 0.15)",
+  Monsoon: "rgba(100, 160, 180, 0.15)",
+  Autumn: "rgba(200, 160, 100, 0.15)",
+  Winter: "rgba(180, 200, 220, 0.15)",
+};
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {seasons.map((season, i) => (
+export function Seasons({ seasons, city, gallery }: SeasonsProps) {
+  const [expanded, setExpanded] = useState<number | null>(null);
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-80px" });
+
+  return (
+    <section ref={ref} className="bg-white py-24 lg:py-32">
+      <motion.div
+        className="text-center px-8 mb-16"
+        initial={{ opacity: 0, y: 20 }}
+        animate={isInView ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <p className="font-label text-gold text-xs mb-4">{city}</p>
+        <h2 className="font-serif text-[clamp(1.8rem,3vw,2.5rem)] text-charcoal font-light">
+          Through the Seasons
+        </h2>
+      </motion.div>
+
+      <div className="flex flex-col">
+        {seasons.map((season, i) => {
+          const isExpanded = expanded === i;
+          const image = gallery[i % gallery.length];
+          return (
             <motion.div
               key={season.name}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{
-                duration: 0.9,
-                ease: [0.16, 1, 0.3, 1],
-                delay: i * 0.1,
+              className="relative overflow-hidden cursor-pointer"
+              style={{
+                backgroundColor: seasonColors[season.name] || "rgba(0,0,0,0.03)",
               }}
-              className="border border-warm-gray-dark bg-white p-8 transition-colors duration-500 hover:border-gold/40"
+              data-cursor-hover
+              onClick={() => setExpanded(isExpanded ? null : i)}
+              animate={{ height: isExpanded ? "60vh" : "15vh" }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
             >
-              <h3 className="font-serif text-2xl font-light text-charcoal">
-                {season.name}
-              </h3>
-              <p className="mt-1 text-xs tracking-wider text-gold">
-                {season.months}
-              </p>
-              <p className="mt-1 text-xs text-charcoal-light">
-                {season.temperature}
-              </p>
+              {isExpanded && (
+                <motion.div
+                  className="absolute inset-0 bg-cover bg-center"
+                  style={{ backgroundImage: `url(${image})` }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 0.25 }}
+                  transition={{ duration: 0.6 }}
+                />
+              )}
 
-              <p className="mt-5 text-sm leading-relaxed text-charcoal-light">
-                {season.description}
-              </p>
+              <div className="relative z-10 flex items-center h-full px-8 lg:px-20">
+                <div className="flex-1">
+                  <div className="flex items-baseline gap-6">
+                    <h3 className="font-serif text-[clamp(1.4rem,2.5vw,2rem)] text-charcoal font-light">
+                      {season.name}
+                    </h3>
+                    <span className="font-label text-warm/40 text-xs">
+                      {season.months}
+                    </span>
+                    <span className="text-warm/30 text-xs">{season.temperature}</span>
+                  </div>
 
-              <ul className="mt-5 space-y-2">
-                {season.highlights.map((highlight) => (
-                  <li
-                    key={highlight}
-                    className="flex items-center gap-2 text-xs text-charcoal-light"
-                  >
-                    <span className="h-1 w-1 rounded-full bg-gold" />
-                    {highlight}
-                  </li>
-                ))}
-              </ul>
+                  <AnimatePresence>
+                    {isExpanded && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.5, delay: 0.2 }}
+                        className="mt-6 max-w-xl"
+                      >
+                        <p className="text-warm text-sm leading-relaxed mb-4">
+                          {season.description}
+                        </p>
+                        <div className="flex flex-wrap gap-3">
+                          {season.highlights.map((h) => (
+                            <span
+                              key={h}
+                              className="text-gold/80 text-xs px-3 py-1 border border-gold/15 rounded-full"
+                            >
+                              {h}
+                            </span>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                <motion.span
+                  className="text-gold text-xl font-light"
+                  animate={{ rotate: isExpanded ? 45 : 0 }}
+                  transition={{ duration: 0.4 }}
+                >
+                  +
+                </motion.span>
+              </div>
             </motion.div>
-          ))}
-        </div>
+          );
+        })}
       </div>
     </section>
   );

@@ -1,79 +1,150 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { useRef } from "react";
+import type { HostelPhoto } from "@/data/sample";
 
 interface StoryProps {
   longDescription: string;
-  photos: { url: string; caption?: string }[];
+  photos: HostelPhoto[];
 }
 
 export function Story({ longDescription, photos }: StoryProps) {
-  const paragraphs = longDescription.split("\n\n");
-  const storyPhoto = photos[1]?.url ?? photos[0]?.url;
+  const ref = useRef<HTMLDivElement>(null);
+  const paragraphs = longDescription.split("\n\n").filter(Boolean);
+  const storyPhotos = photos.slice(0, 3);
+
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start start", "end end"],
+  });
 
   return (
-    <section className="py-20 sm:py-28 px-6 bg-white">
-      <div className="max-w-6xl mx-auto">
-        <motion.p
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-          viewport={{ once: true }}
-          className="text-sm tracking-[0.3em] uppercase text-warm-gray mb-4"
-        >
-          our story
-        </motion.p>
+    <section ref={ref} className="relative bg-cream">
+      <div className="max-w-7xl mx-auto px-6 sm:px-10">
+        {/* Section label */}
+        <div className="pt-20 pb-10">
+          <span className="font-mono text-xs tracking-[0.3em] uppercase text-warm-gray">
+            Our Story
+          </span>
+        </div>
 
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="text-4xl sm:text-5xl md:text-6xl mb-12"
-          style={{ fontFamily: "var(--font-caveat)" }}
-        >
-          How it all started
-        </motion.h2>
-
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-10 lg:gap-16">
-          <div className="lg:col-span-3 space-y-6">
-            {paragraphs.map((paragraph, i) => (
-              <motion.p
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: i * 0.15 }}
-                viewport={{ once: true }}
-                className="text-warm-gray leading-relaxed text-base sm:text-lg"
-              >
-                {paragraph}
-              </motion.p>
+        <div className="flex flex-col lg:flex-row gap-10 lg:gap-20">
+          {/* Left -- text scrolls normally */}
+          <div className="lg:w-1/2 space-y-0">
+            {paragraphs.map((para, i) => (
+              <StoryParagraph key={i} text={para} index={i} />
             ))}
+            <div className="h-[50vh]" />
           </div>
 
-          <motion.div
-            className="lg:col-span-2"
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7, delay: 0.2 }}
-            viewport={{ once: true }}
-          >
-            <div className="sticky top-24">
-              <div className="relative">
-                <img
-                  src={storyPhoto}
-                  alt="Life at the hostel"
-                  className="w-full rounded-sm shadow-lg"
-                  loading="lazy"
+          {/* Right -- sticky photo that crossfades */}
+          <div className="hidden lg:block lg:w-1/2">
+            <div className="sticky top-20 h-[70vh]">
+              {storyPhotos.map((photo, i) => (
+                <StoryPhoto
+                  key={i}
+                  photo={photo}
+                  index={i}
+                  total={storyPhotos.length}
+                  scrollYProgress={scrollYProgress}
                 />
-                <div className="absolute -bottom-4 -right-4 bg-terracotta text-white px-4 py-2 text-sm tracking-wide rounded-sm">
-                  est. 2019
-                </div>
-              </div>
+              ))}
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
     </section>
+  );
+}
+
+function StoryParagraph({ text, index }: { text: string; index: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start 80%", "start 30%"],
+  });
+  const opacity = useTransform(scrollYProgress, [0, 1], [0.15, 1]);
+  const y = useTransform(scrollYProgress, [0, 1], [30, 0]);
+
+  return (
+    <motion.div ref={ref} style={{ opacity, y }} className="mb-16">
+      {index === 0 && (
+        <motion.span
+          className="font-serif text-6xl sm:text-7xl text-terracotta/30 float-left mr-3 mt-1 leading-[0.8]"
+          initial={{ opacity: 0, scale: 0.5 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          {text.charAt(0)}
+        </motion.span>
+      )}
+      <p className="font-serif text-lg sm:text-xl leading-[1.8] text-charcoal/80">
+        {index === 0 ? text.slice(1) : text}
+      </p>
+
+      {index === 1 && (
+        <motion.blockquote
+          className="mt-10 ml-8 border-l-2 border-terracotta/30 pl-6 font-handwritten text-2xl sm:text-3xl text-terracotta/70 italic leading-relaxed"
+          initial={{ opacity: 0, x: -20 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+        >
+          &ldquo;Come as a guest, leave as family.&rdquo;
+        </motion.blockquote>
+      )}
+    </motion.div>
+  );
+}
+
+function StoryPhoto({
+  photo,
+  index,
+  total,
+  scrollYProgress,
+}: {
+  photo: HostelPhoto;
+  index: number;
+  total: number;
+  scrollYProgress: ReturnType<typeof useScroll>["scrollYProgress"];
+}) {
+  const segmentSize = 1 / total;
+  const start = index * segmentSize;
+  const fadeIn = start + segmentSize * 0.1;
+  const fadeOut = start + segmentSize * 0.9;
+  const end = (index + 1) * segmentSize;
+
+  const opacity = useTransform(
+    scrollYProgress,
+    index === 0
+      ? [0, fadeIn, fadeOut, end]
+      : index === total - 1
+        ? [start, fadeIn, 1, 1]
+        : [start, fadeIn, fadeOut, end],
+    index === 0
+      ? [1, 1, 1, 0]
+      : index === total - 1
+        ? [0, 1, 1, 1]
+        : [0, 1, 1, 0]
+  );
+
+  return (
+    <motion.div
+      className="absolute inset-0 rounded-sm overflow-hidden photo-cursor"
+      style={{ opacity }}
+    >
+      <div
+        className="w-full h-full bg-cover bg-center"
+        style={{ backgroundImage: `url(${photo.url})` }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+      {photo.caption && (
+        <span className="absolute bottom-6 left-6 font-handwritten text-lg text-white/70">
+          {photo.caption}
+        </span>
+      )}
+    </motion.div>
   );
 }

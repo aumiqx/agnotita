@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 import type { HostelRoom } from "@/data/sample";
 
@@ -8,126 +8,153 @@ interface RoomsProps {
   rooms: HostelRoom[];
 }
 
-const amenityIcons: Record<string, string> = {
-  "River View": "\uD83C\uDF0A",
-  "Personal Locker": "\uD83D\uDD12",
-  "Reading Light": "\uD83D\uDCA1",
-  "USB Charging": "\uD83D\uDD0C",
-  "Women Only": "\uD83D\uDC9C",
-  "Privacy Curtains": "\uD83E\uDE9E",
-  "Mirror": "\uD83E\uDE9E",
-  "Open Air": "\u26FA",
-  "Star Views": "\u2B50",
-  "Sleeping Bag": "\uD83D\uDECC",
-  "Shared Bath": "\uD83D\uDEB0",
-  "Private Bath": "\uD83D\uDEB1",
-  "Mountain View": "\u26F0\uFE0F",
-  "Queen Bed": "\uD83D\uDECF\uFE0F",
-  "Balcony": "\uD83C\uDF3F",
-  "Unique Stay": "\u2728",
-  "Forest View": "\uD83C\uDF32",
-  "Private Deck": "\uD83C\uDFE1",
-  "Hammock": "\uD83C\uDFDD\uFE0F",
-};
-
 export function Rooms({ rooms }: RoomsProps) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-
   return (
-    <section className="py-20 sm:py-28 bg-white">
-      <div className="max-w-6xl mx-auto px-6">
-        <motion.p
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-          viewport={{ once: true }}
-          className="text-sm tracking-[0.3em] uppercase text-warm-gray mb-4"
-        >
-          rooms
-        </motion.p>
-
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="text-4xl sm:text-5xl mb-4"
-          style={{ fontFamily: "var(--font-caveat)" }}
-        >
+    <section className="relative bg-cream">
+      {/* Section header */}
+      <div className="max-w-7xl mx-auto px-6 sm:px-10 pt-24 pb-8">
+        <span className="font-mono text-xs tracking-[0.3em] uppercase text-warm-gray block mb-4">
+          Where You Sleep
+        </span>
+        <h2 className="font-handwritten text-5xl sm:text-6xl md:text-7xl text-charcoal">
           Pick your spot
-        </motion.h2>
-
-        <motion.p
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          viewport={{ once: true }}
-          className="text-warm-gray mb-10 text-base"
-        >
-          From dorms to treehouses. Every bed comes with a story.
-        </motion.p>
+        </h2>
       </div>
 
-      <div
-        ref={scrollRef}
-        className="flex gap-5 overflow-x-auto hide-scrollbar px-6 pb-4"
-        style={{ scrollSnapType: "x mandatory" }}
-      >
-        <div className="shrink-0 w-[max(0px,calc((100vw-72rem)/2))]" />
-
+      {/* Stacking cards */}
+      <div className="relative">
         {rooms.map((room, i) => (
+          <RoomCard key={room.name} room={room} index={i} total={rooms.length} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function RoomCard({
+  room,
+  index,
+  total,
+}: {
+  room: HostelRoom;
+  index: number;
+  total: number;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start end", "end start"],
+  });
+
+  const scale = useTransform(
+    scrollYProgress,
+    [0, 0.3, 0.7, 1],
+    [0.9, 1, 1, 0.95]
+  );
+  const opacity = useTransform(
+    scrollYProgress,
+    [0, 0.2, 0.8, 1],
+    [0, 1, 1, index < total - 1 ? 0.3 : 1]
+  );
+
+  return (
+    <motion.div
+      ref={ref}
+      className="sticky top-0 h-screen flex items-center justify-center px-4 sm:px-6"
+      style={{ zIndex: index + 1, top: `${index * 2}rem` }}
+    >
+      <motion.div
+        className="relative w-full max-w-6xl h-[75vh] sm:h-[80vh] rounded-sm overflow-hidden shadow-2xl"
+        style={{ scale, opacity }}
+      >
+        {/* Photo background */}
+        <div
+          className="absolute inset-0 bg-cover bg-center photo-cursor"
+          style={{ backgroundImage: `url(${room.photo})` }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-transparent" />
+
+        {/* Content overlay */}
+        <div className="relative h-full flex flex-col justify-end p-8 sm:p-12 md:p-16">
+          {/* Price stamp */}
           <motion.div
-            key={room.name}
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: i * 0.1 }}
+            className="absolute top-8 right-8 sm:top-12 sm:right-12"
+            initial={{ opacity: 0, rotate: -15, scale: 1.5 }}
+            whileInView={{ opacity: 1, rotate: -5, scale: 1 }}
             viewport={{ once: true }}
-            className="shrink-0 w-[300px] sm:w-[340px] bg-cream rounded-sm overflow-hidden shadow-sm hover:shadow-md transition-shadow"
-            style={{ scrollSnapAlign: "start" }}
+            transition={{ duration: 0.5, delay: 0.3 }}
           >
-            <div className="relative h-48 overflow-hidden">
-              <img
-                src={room.photo}
-                alt={room.name}
-                className="w-full h-full object-cover"
-                loading="lazy"
-              />
-              <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-sm">
-                <span className="text-forest font-semibold text-sm">
-                  {"\u20B9"}{room.price}
+            <div className="stamp bg-cream/90 backdrop-blur-sm">
+              <div className="text-center">
+                <span className="font-mono text-xs text-warm-gray block">
+                  from
                 </span>
-                <span className="text-warm-gray text-xs">/night</span>
-              </div>
-            </div>
-
-            <div className="p-5">
-              <h3
-                className="text-2xl mb-2"
-                style={{ fontFamily: "var(--font-caveat)" }}
-              >
-                {room.name}
-              </h3>
-              <p className="text-warm-gray text-sm mb-4 leading-relaxed">
-                {room.description}
-              </p>
-
-              <div className="flex flex-wrap gap-2">
-                {room.amenities.map((amenity) => (
-                  <span
-                    key={amenity}
-                    className="inline-flex items-center gap-1 text-xs bg-white px-2 py-1 rounded-sm text-warm-gray"
-                  >
-                    <span>{amenityIcons[amenity] ?? "\u2713"}</span>
-                    {amenity}
-                  </span>
-                ))}
+                <span className="font-handwritten text-3xl sm:text-4xl text-terracotta">
+                  &#8377;{room.price}
+                </span>
+                <span className="font-mono text-xs text-warm-gray block">
+                  /night
+                </span>
               </div>
             </div>
           </motion.div>
-        ))}
 
-        <div className="shrink-0 w-6" />
-      </div>
-    </section>
+          {/* Room info */}
+          <div className="max-w-lg">
+            <motion.span
+              className="font-mono text-xs tracking-[0.2em] uppercase text-white/40 block mb-3"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+            >
+              {String(index + 1).padStart(2, "0")} /{" "}
+              {String(total).padStart(2, "0")}
+            </motion.span>
+
+            <motion.h3
+              className="font-handwritten text-4xl sm:text-5xl md:text-6xl text-white mb-4"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2, duration: 0.6 }}
+            >
+              {room.name}
+            </motion.h3>
+
+            <motion.p
+              className="font-serif text-lg text-white/70 mb-8 max-w-md"
+              initial={{ opacity: 0, y: 15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.3, duration: 0.6 }}
+            >
+              {room.description}
+            </motion.p>
+
+            <motion.div
+              className="flex flex-wrap gap-3"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.5, duration: 0.6 }}
+            >
+              {room.amenities.map((amenity, j) => (
+                <motion.span
+                  key={amenity}
+                  className="font-mono text-xs tracking-wider text-white/60 border border-white/20 px-3 py-1.5 rounded-sm backdrop-blur-sm"
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.5 + j * 0.08 }}
+                >
+                  {amenity}
+                </motion.span>
+              ))}
+            </motion.div>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
   );
 }

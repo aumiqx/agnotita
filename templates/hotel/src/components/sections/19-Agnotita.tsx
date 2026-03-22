@@ -1,6 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useRef } from "react";
+import { motion, useInView } from "framer-motion";
 
 interface AgnotitaProps {
   message: string;
@@ -8,30 +9,39 @@ interface AgnotitaProps {
 }
 
 export function Agnotita({ message, name }: AgnotitaProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-80px" });
+
   return (
-    <section className="bg-ivory py-24 md:py-28">
-      <div className="mx-auto max-w-2xl px-6 text-center">
-        <motion.div
+    <section
+      ref={ref}
+      className="bg-ivory"
+      style={{ padding: "clamp(80px, 12vh, 160px) 24px" }}
+    >
+      <div className="max-w-2xl mx-auto text-center">
+        <motion.p
+          className="font-serif italic text-warm/50 text-base leading-relaxed mb-8"
           initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
         >
-          <p className="text-xs font-medium tracking-[0.3em] uppercase text-gold">
-            agnotita
-          </p>
+          {message}
+        </motion.p>
 
-          <p className="mt-8 font-serif text-lg font-light leading-relaxed text-charcoal-light">
-            {message}
-          </p>
-
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ duration: 1, delay: 0.4 }}
+        >
           <a
             href="https://aumiqx.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-8 inline-block text-xs tracking-[0.2em] uppercase text-gold transition-colors duration-300 hover:text-gold-dark"
+            className="font-label text-gold/40 text-[10px] tracking-[0.2em] relative group"
+            data-cursor-hover
           >
-            aumiqx.com
+            agnotita
+            <span className="absolute bottom-0 left-0 w-0 h-px bg-gold/30 group-hover:w-full transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]" />
           </a>
         </motion.div>
       </div>

@@ -1,6 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useRef } from "react";
+import { motion, useInView } from "framer-motion";
 
 interface ReserveProps {
   name: string;
@@ -10,53 +11,64 @@ interface ReserveProps {
 }
 
 export function Reserve({ name, bookingUrl, phone, whatsapp }: ReserveProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
+
   return (
-    <section id="reserve" className="bg-white py-28 md:py-36">
-      <div className="mx-auto max-w-2xl px-6 text-center">
-        <motion.div
+    <section
+      ref={ref}
+      id="reserve"
+      className="bg-white"
+      style={{ padding: "clamp(100px, 15vh, 200px) 24px" }}
+    >
+      <div className="max-w-xl mx-auto text-center">
+        <motion.h2
+          className="font-serif text-[clamp(2rem,4vw,3rem)] text-charcoal font-light mb-12"
           initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
         >
-          <div className="mx-auto mb-8 h-px w-16 bg-gold" />
+          Begin Your Stay
+        </motion.h2>
 
-          <h2 className="font-serif text-sm font-medium tracking-[0.3em] uppercase text-gold">
-            Begin Your Stay
-          </h2>
+        <motion.div
+          className="space-y-6"
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ duration: 1, delay: 0.4 }}
+        >
+          <a
+            href={`tel:${phone.replace(/\s/g, "")}`}
+            className="block font-serif text-2xl text-charcoal relative group"
+            data-cursor-hover
+          >
+            {phone}
+            <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-px bg-gold group-hover:w-full transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]" />
+          </a>
 
-          <p className="mt-6 font-serif text-3xl font-light text-charcoal md:text-4xl">
-            We look forward to welcoming you to {name}
-          </p>
+          <div className="gold-line mx-auto" />
+
+          <a
+            href={`https://wa.me/${whatsapp.replace(/[^0-9]/g, "")}`}
+            className="block font-serif text-lg text-warm/60 relative group italic"
+            data-cursor-hover
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Message on WhatsApp
+            <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-px bg-gold group-hover:w-full transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]" />
+          </a>
 
           <a
             href={bookingUrl}
+            className="block font-serif text-lg text-warm/60 relative group italic"
+            data-cursor-hover
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-10 inline-block bg-gold px-12 py-4 text-xs font-medium tracking-[0.25em] uppercase text-white transition-colors duration-500 hover:bg-gold-dark"
           >
-            Reserve Your Stay
+            Reserve Online
+            <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-px bg-gold group-hover:w-full transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]" />
           </a>
-
-          <div className="mt-10 flex flex-col items-center gap-4 md:flex-row md:justify-center md:gap-8">
-            <a
-              href={`tel:${phone}`}
-              className="text-sm text-charcoal-light transition-colors duration-300 hover:text-gold"
-            >
-              {phone}
-            </a>
-            <span className="hidden text-gold md:block">&middot;</span>
-            <a
-              href={`https://wa.me/${whatsapp.replace(/[^0-9]/g, "")}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm text-charcoal-light transition-colors duration-300 hover:text-gold"
-            >
-              WhatsApp
-            </a>
-          </div>
-
-          <div className="mx-auto mt-8 h-px w-16 bg-gold" />
         </motion.div>
       </div>
     </section>

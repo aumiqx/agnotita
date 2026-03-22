@@ -8,28 +8,88 @@ interface FAQProps {
   faq: FAQItem[];
 }
 
-function AccordionItem({ item, index }: { item: FAQItem; index: number }) {
+const journalDates = [
+  "Day 1, Morning",
+  "Day 1, Afternoon",
+  "Day 2, Morning",
+  "Day 2, Evening",
+  "Day 3",
+  "Day 4",
+  "Day 5",
+  "Day 6",
+];
+
+export function FAQ({ faq }: FAQProps) {
+  return (
+    <section className="py-24 sm:py-32 px-6 bg-cream">
+      <div className="max-w-3xl mx-auto">
+        <span className="font-mono text-xs tracking-[0.3em] uppercase text-warm-gray block mb-4">
+          FAQ
+        </span>
+        <h2 className="font-handwritten text-5xl sm:text-6xl text-charcoal mb-4">
+          Travel journal
+        </h2>
+        <p className="font-serif text-lg text-warm-gray mb-16">
+          Questions every traveler asks, answered honestly.
+        </p>
+
+        <div className="journal-lines bg-white rounded-sm p-6 sm:p-10 shadow-sm">
+          {/* Red margin line */}
+          <div className="relative">
+            <div className="absolute left-8 sm:left-10 top-0 bottom-0 w-px bg-red-200/40" />
+
+            <div className="space-y-0">
+              {faq.map((item, i) => (
+                <JournalEntry
+                  key={i}
+                  item={item}
+                  index={i}
+                  date={journalDates[i] ?? `Day ${i + 1}`}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function JournalEntry({
+  item,
+  index,
+  date,
+}: {
+  item: FAQItem;
+  index: number;
+  date: string;
+}) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 15 }}
       whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: index * 0.06 }}
       viewport={{ once: true }}
-      className="border-b border-sand last:border-b-0"
+      transition={{ duration: 0.4, delay: index * 0.06 }}
+      className="border-b border-sand/30 last:border-b-0"
     >
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between py-5 text-left group"
+        className="w-full flex items-start py-5 text-left group pl-12 sm:pl-14"
       >
-        <span className="text-base sm:text-lg text-charcoal pr-4 group-hover:text-terracotta transition-colors">
-          {item.question}
-        </span>
+        <div className="flex-1">
+          <span className="font-mono text-[10px] tracking-wider text-terracotta/60 uppercase block mb-1">
+            {date}
+          </span>
+          <span className="font-handwritten text-xl sm:text-2xl text-charcoal group-hover:text-terracotta transition-colors leading-snug">
+            {item.question}
+          </span>
+        </div>
         <motion.span
           animate={{ rotate: isOpen ? 45 : 0 }}
           transition={{ duration: 0.2 }}
-          className="shrink-0 text-2xl text-warm-gray leading-none"
+          className="shrink-0 text-xl text-warm-gray/50 ml-4 mt-5"
         >
           +
         </motion.span>
@@ -41,50 +101,17 @@ function AccordionItem({ item, index }: { item: FAQItem; index: number }) {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
             className="overflow-hidden"
           >
-            <p className="text-warm-gray text-sm sm:text-base leading-relaxed pb-5 pr-8">
-              {item.answer}
-            </p>
+            <div className="pl-12 sm:pl-14 pr-8 pb-6">
+              <p className="font-serif text-base text-warm-gray leading-relaxed">
+                {item.answer}
+              </p>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
     </motion.div>
-  );
-}
-
-export function FAQ({ faq }: FAQProps) {
-  return (
-    <section className="py-20 sm:py-28 px-6 bg-white">
-      <div className="max-w-3xl mx-auto">
-        <motion.p
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-          viewport={{ once: true }}
-          className="text-sm tracking-[0.3em] uppercase text-warm-gray mb-4"
-        >
-          faq
-        </motion.p>
-
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="text-4xl sm:text-5xl mb-10"
-          style={{ fontFamily: "var(--font-caveat)" }}
-        >
-          Questions people ask
-        </motion.h2>
-
-        <div className="bg-cream rounded-sm p-6 sm:p-8">
-          {faq.map((item, i) => (
-            <AccordionItem key={i} item={item} index={i} />
-          ))}
-        </div>
-      </div>
-    </section>
   );
 }

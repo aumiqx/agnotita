@@ -1,6 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useRef } from "react";
+import { motion, useInView } from "framer-motion";
 
 interface FooterProps {
   name: string;
@@ -12,123 +13,101 @@ interface FooterProps {
     facebook?: string;
     twitter?: string;
   };
-  mapEmbedUrl: string;
 }
 
-export function Footer({
-  name,
-  address,
-  phone,
-  email,
-  socialLinks,
-  mapEmbedUrl,
-}: FooterProps) {
+function SocialIcon({ platform, url }: { platform: string; url: string }) {
+  const labels: Record<string, string> = {
+    instagram: "IG",
+    facebook: "FB",
+    twitter: "TW",
+  };
+
   return (
-    <footer className="bg-charcoal py-20 text-white/80">
-      <div className="mx-auto max-w-6xl px-6">
-        <motion.div
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="w-10 h-10 rounded-full border border-gold/30 flex items-center justify-center text-gold/60 text-[9px] font-label tracking-widest hover:border-gold hover:text-gold transition-all duration-500"
+      data-cursor-hover
+    >
+      {labels[platform] || platform.charAt(0).toUpperCase()}
+    </a>
+  );
+}
+
+export function Footer({ name, address, phone, email, socialLinks }: FooterProps) {
+  const ref = useRef<HTMLElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-50px" });
+
+  return (
+    <footer ref={ref} className="bg-charcoal relative">
+      <div className="absolute top-0 left-0 right-0 h-px bg-gold/30" />
+
+      <div
+        className="max-w-3xl mx-auto px-8 text-center"
+        style={{ padding: "clamp(60px, 10vh, 120px) 24px" }}
+      >
+        <motion.h3
+          className="font-serif text-gold text-[clamp(1.5rem,3vw,2rem)] font-light tracking-[0.08em] mb-6"
           initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-50px" }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
         >
-          <div className="grid gap-12 md:grid-cols-3">
-            <div>
-              <h3 className="font-serif text-2xl font-light text-white">
-                {name}
-              </h3>
-              <p className="mt-4 text-sm leading-relaxed text-white/50">
-                {address}
-              </p>
+          {name}
+        </motion.h3>
 
-              <div className="mt-6 space-y-2">
-                <a
-                  href={`tel:${phone}`}
-                  className="block text-sm text-white/60 transition-colors duration-300 hover:text-gold"
-                >
-                  {phone}
-                </a>
-                <a
-                  href={`mailto:${email}`}
-                  className="block text-sm text-white/60 transition-colors duration-300 hover:text-gold"
-                >
-                  {email}
-                </a>
-              </div>
+        <motion.p
+          className="text-white/30 text-sm mb-8 leading-relaxed max-w-md mx-auto"
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ duration: 1, delay: 0.2 }}
+        >
+          {address}
+        </motion.p>
 
-              <div className="mt-6 flex gap-6">
-                {socialLinks.instagram && (
-                  <a
-                    href={socialLinks.instagram}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs tracking-wider text-white/40 uppercase transition-colors duration-300 hover:text-gold"
-                  >
-                    Instagram
-                  </a>
-                )}
-                {socialLinks.facebook && (
-                  <a
-                    href={socialLinks.facebook}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs tracking-wider text-white/40 uppercase transition-colors duration-300 hover:text-gold"
-                  >
-                    Facebook
-                  </a>
-                )}
-                {socialLinks.twitter && (
-                  <a
-                    href={socialLinks.twitter}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs tracking-wider text-white/40 uppercase transition-colors duration-300 hover:text-gold"
-                  >
-                    Twitter
-                  </a>
-                )}
-              </div>
-            </div>
-
-            <div className="md:col-span-2">
-              <div className="h-64 w-full overflow-hidden md:h-full">
-                <iframe
-                  src={mapEmbedUrl}
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0, minHeight: "250px" }}
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  title={`${name} location`}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-16 border-t border-white/10 pt-8 text-center">
-            <p className="text-xs tracking-wider text-white/30">
-              Crafted by{" "}
-              <a
-                href="https://aumiqx.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gold/60 transition-colors duration-300 hover:text-gold"
-              >
-                agnotita
-              </a>{" "}
-              &times;{" "}
-              <a
-                href="https://aumiqx.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gold/60 transition-colors duration-300 hover:text-gold"
-              >
-                aumiqx
-              </a>
-            </p>
-          </div>
+        <motion.div
+          className="flex items-center justify-center gap-6 mb-8"
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ duration: 1, delay: 0.3 }}
+        >
+          <a
+            href={`tel:${phone.replace(/\s/g, "")}`}
+            className="text-gold/50 text-sm hover:text-gold transition-colors duration-500"
+            data-cursor-hover
+          >
+            {phone}
+          </a>
+          <span className="w-px h-3 bg-gold/20" />
+          <a
+            href={`mailto:${email}`}
+            className="text-gold/50 text-sm hover:text-gold transition-colors duration-500"
+            data-cursor-hover
+          >
+            {email}
+          </a>
         </motion.div>
+
+        <motion.div
+          className="flex justify-center gap-3 mb-12"
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ duration: 1, delay: 0.4 }}
+        >
+          {Object.entries(socialLinks).map(
+            ([platform, url]) =>
+              url && <SocialIcon key={platform} platform={platform} url={url} />
+          )}
+        </motion.div>
+
+        <motion.p
+          className="text-gold/20 text-[9px] font-label tracking-[0.2em]"
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ duration: 1, delay: 0.5 }}
+        >
+          Crafted by agnotita &times; aumiqx
+        </motion.p>
       </div>
     </footer>
   );

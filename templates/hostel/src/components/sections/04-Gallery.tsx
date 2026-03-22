@@ -1,141 +1,153 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { motion, useScroll, useTransform, type MotionValue } from "framer-motion";
+import { useRef } from "react";
+import type { HostelPhoto } from "@/data/sample";
 
 interface GalleryProps {
-  photos: { url: string; caption?: string }[];
+  photos: HostelPhoto[];
 }
 
 export function Gallery({ photos }: GalleryProps) {
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const masonryPattern = [
-    "col-span-2 row-span-2",
-    "col-span-1 row-span-1",
-    "col-span-1 row-span-1",
-    "col-span-1 row-span-2",
-    "col-span-1 row-span-1",
-    "col-span-2 row-span-1",
-    "col-span-1 row-span-1",
-    "col-span-1 row-span-1",
-  ];
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end end"],
+  });
+
+  const totalSlides = photos.length;
+  const x = useTransform(
+    scrollYProgress,
+    [0, 1],
+    ["0%", `-${(totalSlides - 1) * 85}%`]
+  );
+
+  const counterRaw = useTransform(
+    scrollYProgress,
+    [0, 1],
+    [1, totalSlides]
+  );
 
   return (
-    <section className="py-20 sm:py-28 px-6 bg-cream">
-      <div className="max-w-6xl mx-auto">
-        <motion.p
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-          viewport={{ once: true }}
-          className="text-sm tracking-[0.3em] uppercase text-warm-gray mb-4"
-        >
-          gallery
-        </motion.p>
+    <section
+      ref={containerRef}
+      style={{ height: `${totalSlides * 60}vh` }}
+    >
+      <div className="sticky top-0 h-screen overflow-hidden bg-charcoal">
+        {/* Label */}
+        <div className="absolute top-8 left-8 z-20">
+          <span className="font-mono text-xs tracking-[0.3em] uppercase text-white/40">
+            Gallery
+          </span>
+        </div>
 
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="text-4xl sm:text-5xl mb-12"
-          style={{ fontFamily: "var(--font-caveat)" }}
-        >
-          Snapshots from here
-        </motion.h2>
+        {/* Counter */}
+        <div className="absolute top-8 right-8 z-20 font-mono text-sm text-white/60">
+          <Counter value={counterRaw} total={totalSlides} />
+        </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 auto-rows-[180px] sm:auto-rows-[200px] md:auto-rows-[220px] gap-3">
-          {photos.slice(0, 8).map((photo, i) => (
-            <motion.button
+        {/* Horizontal scroll track */}
+        <motion.div
+          className="flex items-center h-full gap-8 pl-[10vw]"
+          style={{ x }}
+        >
+          {photos.map((photo, i) => (
+            <GallerySlide
               key={i}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: i * 0.08 }}
-              viewport={{ once: true }}
-              whileHover={{ scale: 1.02 }}
-              className={`${masonryPattern[i] ?? "col-span-1 row-span-1"} relative overflow-hidden rounded-sm shadow-md cursor-pointer group`}
-              onClick={() => setSelectedIndex(i)}
-            >
-              <img
-                src={photo.url}
-                alt={photo.caption ?? `Photo ${i + 1}`}
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
-              {photo.caption && (
-                <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <p className="text-white text-xs sm:text-sm">{photo.caption}</p>
-                </div>
-              )}
-            </motion.button>
+              photo={photo}
+              index={i}
+              scrollYProgress={scrollYProgress}
+              totalPhotos={totalSlides}
+            />
           ))}
+          <div className="shrink-0 w-[10vw]" />
+        </motion.div>
+
+        {/* Progress bar */}
+        <div className="absolute bottom-8 left-8 right-8 z-20">
+          <div className="h-px bg-white/10">
+            <motion.div
+              className="h-full bg-terracotta"
+              style={{ scaleX: scrollYProgress, transformOrigin: "left" }}
+            />
+          </div>
         </div>
       </div>
-
-      <AnimatePresence>
-        {selectedIndex !== null && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 sm:p-8"
-            onClick={() => setSelectedIndex(null)}
-          >
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              transition={{ type: "spring", damping: 25 }}
-              className="relative max-w-4xl max-h-[85vh] w-full"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <img
-                src={photos[selectedIndex].url}
-                alt={photos[selectedIndex].caption ?? "Photo"}
-                className="w-full h-full object-contain rounded-sm"
-              />
-              {photos[selectedIndex].caption && (
-                <p className="text-white/80 text-center mt-4 text-sm">
-                  {photos[selectedIndex].caption}
-                </p>
-              )}
-
-              <button
-                onClick={() => setSelectedIndex(null)}
-                className="absolute -top-12 right-0 text-white/70 hover:text-white text-2xl p-2"
-              >
-                &times;
-              </button>
-
-              {selectedIndex > 0 && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedIndex(selectedIndex - 1);
-                  }}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 text-white/70 hover:text-white text-3xl p-2"
-                >
-                  &lsaquo;
-                </button>
-              )}
-
-              {selectedIndex < photos.length - 1 && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedIndex(selectedIndex + 1);
-                  }}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-white/70 hover:text-white text-3xl p-2"
-                >
-                  &rsaquo;
-                </button>
-              )}
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </section>
+  );
+}
+
+function Counter({
+  value,
+  total,
+}: {
+  value: MotionValue<number>;
+  total: number;
+}) {
+  const display = useTransform(value, (v: number) => Math.round(v));
+  return (
+    <motion.span>
+      <motion.span className="text-white font-bold">{display}</motion.span>
+      {" / "}
+      {total}
+    </motion.span>
+  );
+}
+
+function GallerySlide({
+  photo,
+  index,
+  scrollYProgress,
+  totalPhotos,
+}: {
+  photo: HostelPhoto;
+  index: number;
+  scrollYProgress: ReturnType<typeof useScroll>["scrollYProgress"];
+  totalPhotos: number;
+}) {
+  const segmentSize = 1 / totalPhotos;
+  const start = index * segmentSize;
+  const mid = start + segmentSize * 0.5;
+  const end = start + segmentSize;
+
+  const parallaxY = useTransform(
+    scrollYProgress,
+    [start, end],
+    [20 * (index % 2 === 0 ? 1 : -1), -20 * (index % 2 === 0 ? 1 : -1)]
+  );
+
+  const scale = useTransform(scrollYProgress, [start, mid, end], [0.92, 1, 0.92]);
+
+  const slideOpacity = useTransform(
+    scrollYProgress,
+    [
+      Math.max(0, start - segmentSize * 0.2),
+      start + segmentSize * 0.2,
+      mid,
+      end - segmentSize * 0.2,
+      Math.min(1, end + segmentSize * 0.2),
+    ],
+    [0.4, 1, 1, 1, 0.4]
+  );
+
+  return (
+    <motion.div
+      className="shrink-0 w-[80vw] h-[70vh] relative rounded-sm overflow-hidden photo-cursor"
+      style={{ y: parallaxY, scale, opacity: slideOpacity }}
+    >
+      <div
+        className="w-full h-full bg-cover bg-center"
+        style={{ backgroundImage: `url(${photo.url})` }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+      {photo.caption && (
+        <div className="absolute bottom-8 left-8">
+          <span className="font-handwritten text-xl text-white/80">
+            {photo.caption}
+          </span>
+        </div>
+      )}
+    </motion.div>
   );
 }

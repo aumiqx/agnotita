@@ -1,84 +1,89 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useState, useRef } from "react";
+import { motion, AnimatePresence, useInView } from "framer-motion";
 
 interface AmenitiesProps {
   amenities: string[];
 }
 
-function AmenityIcon({ name }: { name: string }) {
-  const iconMap: Record<string, React.ReactNode> = {
-    "Free WiFi": (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" className="h-6 w-6">
-        <path d="M5 12.55a11 11 0 0114.08 0" />
-        <path d="M8.53 16.11a6 6 0 016.95 0" />
-        <circle cx="12" cy="20" r="1" fill="currentColor" />
-      </svg>
-    ),
-    "Infinity Pool": (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" className="h-6 w-6">
-        <path d="M2 16c2-2 4 2 6 0s4-2 6 0 4 2 6 0" />
-        <path d="M2 20c2-2 4 2 6 0s4-2 6 0 4 2 6 0" />
-      </svg>
-    ),
-    "Room Service": (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" className="h-6 w-6">
-        <path d="M4 18h16" />
-        <path d="M4 18c0-6 3.5-10 8-10s8 4 8 10" />
-        <path d="M12 4v4" />
-      </svg>
-    ),
-  };
-
-  const defaultIcon = (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" className="h-6 w-6">
-      <circle cx="12" cy="12" r="3" />
-      <path d="M12 2v4m0 12v4M2 12h4m12 0h4" />
-    </svg>
-  );
-
-  return iconMap[name] || defaultIcon;
-}
+const amenityDescriptions: Record<string, string> = {
+  "Free WiFi": "Complimentary high-speed wireless connectivity throughout the property",
+  "Infinity Pool": "Heated pool with panoramic views, open sunrise to sunset",
+  "Yoga Deck": "Riverside platform for daily guided sessions at dawn and dusk",
+  "Ayurvedic Spa": "Traditional treatments tailored to your unique constitution",
+  "Rooftop Restaurant": "Farm-to-table dining with Himalayan views",
+  "Room Service": "In-room dining available throughout your stay",
+  "Valet Parking": "Complimentary valet service for all guests",
+  "Laundry & Pressing": "Same-day laundry and pressing service",
+  "Fitness Centre": "State-of-the-art equipment with mountain views",
+  "Library & Reading Room": "Curated collection of literature and travel writing",
+  "Meditation Garden": "A tranquil space for contemplation and stillness",
+  "River Access": "Private steps leading down to the Ganges",
+  "Concierge Desk": "Personalized assistance for every aspect of your stay",
+  "Airport Transfers": "Comfortable transfers arranged to and from all nearby airports",
+  "Currency Exchange": "On-site currency exchange for international guests",
+  "In-room Safe": "Secure digital safe in every room",
+};
 
 export function Amenities({ amenities }: AmenitiesProps) {
+  const [hovered, setHovered] = useState<string | null>(null);
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-80px" });
+
   return (
-    <section className="bg-ivory py-24 md:py-32">
-      <div className="mx-auto max-w-5xl px-6">
+    <section ref={ref} className="bg-white py-32 lg:py-40 px-8">
+      <div className="max-w-2xl mx-auto">
         <motion.div
+          className="text-center mb-16"
           initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-16 text-center"
         >
-          <h2 className="font-serif text-sm font-medium tracking-[0.3em] uppercase text-gold">
+          <p className="font-label text-gold text-xs mb-4">At Your Service</p>
+          <h2 className="font-serif text-[clamp(1.8rem,3vw,2.5rem)] text-charcoal font-light">
             Amenities
           </h2>
-          <p className="mt-4 font-serif text-3xl font-light text-charcoal">
-            Everything you need
-          </p>
         </motion.div>
 
-        <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
+        <div className="border-t border-gold/10">
           {amenities.map((amenity, i) => (
             <motion.div
               key={amenity}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{
-                duration: 0.8,
-                ease: [0.16, 1, 0.3, 1],
-                delay: i * 0.04,
-              }}
-              className="flex flex-col items-center gap-3 text-center"
+              className="border-b border-gold/10 py-4 cursor-default"
+              data-cursor-hover
+              onMouseEnter={() => setHovered(amenity)}
+              onMouseLeave={() => setHovered(null)}
+              initial={{ opacity: 0 }}
+              animate={isInView ? { opacity: 1 } : {}}
+              transition={{ duration: 0.5, delay: i * 0.04 }}
             >
-              <div className="text-gold">
-                <AmenityIcon name={amenity} />
+              <div className="flex items-center justify-between">
+                <span className="font-serif text-lg text-charcoal">
+                  {amenity}
+                </span>
+                <motion.span
+                  className="text-gold text-sm"
+                  animate={{ rotate: hovered === amenity ? 45 : 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  +
+                </motion.span>
               </div>
-              <span className="text-xs tracking-wider text-charcoal">
-                {amenity}
-              </span>
+
+              <AnimatePresence>
+                {hovered === amenity && amenityDescriptions[amenity] && (
+                  <motion.p
+                    className="text-warm/50 text-sm mt-2 leading-relaxed"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                    {amenityDescriptions[amenity]}
+                  </motion.p>
+                )}
+              </AnimatePresence>
             </motion.div>
           ))}
         </div>

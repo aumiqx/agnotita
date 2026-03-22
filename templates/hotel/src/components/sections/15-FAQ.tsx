@@ -1,83 +1,79 @@
 "use client";
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useRef } from "react";
+import { motion, AnimatePresence, useInView } from "framer-motion";
 import type { FAQ as FAQType } from "@/data/sample";
 
 interface FAQProps {
   faqs: FAQType[];
 }
 
-function AccordionItem({ faq, isOpen, onToggle }: { faq: FAQType; isOpen: boolean; onToggle: () => void }) {
-  return (
-    <div className="border-b border-warm-gray-dark">
-      <button
-        onClick={onToggle}
-        className="flex w-full items-center justify-between py-6 text-left transition-colors duration-300"
-      >
-        <h3 className="font-serif text-lg font-light text-charcoal pr-8">
-          {faq.question}
-        </h3>
-        <motion.span
-          animate={{ rotate: isOpen ? 45 : 0 }}
-          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-          className="shrink-0 text-gold text-xl font-light"
-        >
-          +
-        </motion.span>
-      </button>
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            className="overflow-hidden"
-          >
-            <p className="pb-6 text-sm leading-relaxed text-charcoal-light">
-              {faq.answer}
-            </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
-
 export function FAQ({ faqs }: FAQProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-80px" });
 
   return (
-    <section className="bg-ivory py-24 md:py-32">
-      <div className="mx-auto max-w-3xl px-6">
+    <section ref={ref} className="bg-white py-32 lg:py-40 px-8">
+      <div className="max-w-2xl mx-auto">
         <motion.div
+          className="text-center mb-16"
           initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-16 text-center"
         >
-          <h2 className="font-serif text-sm font-medium tracking-[0.3em] uppercase text-gold">
-            Frequently Asked Questions
+          <h2 className="font-serif text-[clamp(1.8rem,3vw,2.5rem)] text-charcoal font-light">
+            Frequently Asked
           </h2>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-50px" }}
-          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-        >
-          {faqs.map((faq, i) => (
-            <AccordionItem
-              key={i}
-              faq={faq}
-              isOpen={openIndex === i}
-              onToggle={() => setOpenIndex(openIndex === i ? null : i)}
-            />
-          ))}
-        </motion.div>
+        <div className="border-t border-gold/10">
+          {faqs.map((faq, i) => {
+            const isOpen = openIndex === i;
+            return (
+              <motion.div
+                key={i}
+                className="border-b border-gold/10"
+                initial={{ opacity: 0 }}
+                animate={isInView ? { opacity: 1 } : {}}
+                transition={{ duration: 0.5, delay: i * 0.06 }}
+              >
+                <button
+                  className="w-full flex items-center justify-between py-5 text-left"
+                  onClick={() => setOpenIndex(isOpen ? null : i)}
+                  data-cursor-hover
+                >
+                  <span className="font-serif text-base text-charcoal pr-8">
+                    {faq.question}
+                  </span>
+                  <motion.span
+                    className="text-gold text-lg flex-shrink-0"
+                    animate={{ rotate: isOpen ? 45 : 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    +
+                  </motion.span>
+                </button>
+
+                <AnimatePresence>
+                  {isOpen && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                      className="overflow-hidden"
+                    >
+                      <p className="text-warm/60 text-sm leading-relaxed pb-5 pr-12">
+                        {faq.answer}
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            );
+          })}
+        </div>
       </div>
     </section>
   );

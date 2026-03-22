@@ -8,76 +8,77 @@ interface MeetTheHostProps {
   hostQuote: string;
 }
 
-export function MeetTheHost({ hostName, hostPhoto, hostQuote }: MeetTheHostProps) {
+export function MeetTheHost({
+  hostName,
+  hostPhoto,
+  hostQuote,
+}: MeetTheHostProps) {
   return (
-    <section className="py-20 sm:py-28 px-6 bg-cream">
+    <section className="py-24 sm:py-32 px-6 cork-texture overflow-hidden">
       <div className="max-w-4xl mx-auto">
-        <motion.p
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-          viewport={{ once: true }}
-          className="text-sm tracking-[0.3em] uppercase text-warm-gray mb-4"
-        >
-          meet the host
-        </motion.p>
-
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="text-4xl sm:text-5xl mb-12"
-          style={{ fontFamily: "var(--font-caveat)" }}
-        >
+        <span className="font-mono text-xs tracking-[0.3em] uppercase text-white/50 block mb-4">
+          Meet The Host
+        </span>
+        <h2 className="font-handwritten text-5xl sm:text-6xl text-white mb-16">
           The humans behind this
-        </motion.h2>
+        </h2>
 
-        <div className="flex flex-col md:flex-row items-center gap-10 md:gap-14">
+        <div className="flex flex-col md:flex-row items-start gap-12 md:gap-16">
+          {/* Polaroid photo */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6 }}
+            initial={{ opacity: 0, y: 60, rotate: 8 }}
+            whileInView={{ opacity: 1, y: 0, rotate: -3 }}
             viewport={{ once: true }}
+            transition={{
+              duration: 0.7,
+              type: "spring",
+              stiffness: 100,
+              damping: 15,
+            }}
             className="shrink-0"
           >
-            <div className="relative">
+            <div className="bg-white p-3 pb-14 shadow-xl relative">
               <img
                 src={hostPhoto}
                 alt={hostName}
-                className="w-40 h-40 sm:w-48 sm:h-48 rounded-full object-cover shadow-lg"
+                className="w-52 h-52 sm:w-64 sm:h-64 object-cover"
                 loading="lazy"
               />
-              <div
-                className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-terracotta text-white px-4 py-1 rounded-sm text-sm whitespace-nowrap"
-                style={{ fontFamily: "var(--font-caveat)", fontSize: "1.1rem" }}
-              >
-                {hostName}
+              <div className="absolute bottom-4 left-0 right-0 text-center">
+                <span className="font-handwritten text-xl text-charcoal">
+                  {hostName}
+                </span>
               </div>
+
+              {/* Tape effect on top */}
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-16 h-6 bg-yellow-100/80 rotate-1 shadow-sm" />
             </div>
           </motion.div>
 
+          {/* Quote */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
             viewport={{ once: true }}
+            transition={{ duration: 0.7, delay: 0.3 }}
+            className="flex-1"
           >
             <div className="relative">
-              <svg
-                className="absolute -top-6 -left-4 w-10 h-10 text-sand"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-              >
-                <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
-              </svg>
+              {/* Quote mark */}
+              <span className="font-serif text-[6rem] leading-none text-white/15 absolute -top-8 -left-4 select-none">
+                &ldquo;
+              </span>
 
-              <blockquote
-                className="text-xl sm:text-2xl text-charcoal leading-relaxed pl-6 border-l-2 border-terracotta"
-                style={{ fontFamily: "var(--font-caveat)" }}
-              >
+              <blockquote className="relative z-10 font-serif text-xl sm:text-2xl text-white/90 leading-relaxed pl-2">
                 {hostQuote}
               </blockquote>
+
+              <div className="mt-8 flex items-center gap-3">
+                <div className="w-12 h-px bg-terracotta/60" />
+                <span className="font-handwritten text-lg text-terracotta">
+                  {hostName}
+                </span>
+              </div>
             </div>
           </motion.div>
         </div>

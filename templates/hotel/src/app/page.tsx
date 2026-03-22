@@ -27,24 +27,28 @@ export default function Home() {
     <main>
       <Hero
         name={data.name}
-        tagline={data.tagline}
         city={data.city}
-        state={data.state}
-        stars={data.stars}
         heroImage={data.heroImage}
-        bookingUrl={data.bookingUrl}
       />
-      <Welcome message={data.welcomeMessage} />
-      <Experience items={data.experience} />
+      <Welcome tagline={data.tagline} message={data.welcomeMessage} />
+      <Experience items={data.experience} gallery={data.gallery} />
       <Gallery images={data.gallery} name={data.name} />
       <Rooms rooms={data.rooms} />
       <Dining restaurant={data.dining} />
       <GuestExperiences reviews={data.reviews} />
-      <Surroundings attractions={data.nearbyAttractions} city={data.city} />
+      <Surroundings
+        attractions={data.nearbyAttractions}
+        city={data.city}
+        mapEmbedUrl={data.mapEmbedUrl}
+      />
       <Wellness spa={data.spa} />
       <ADayHere itinerary={data.dayItinerary} name={data.name} />
-      <Seasons seasons={data.seasons} city={data.city} />
-      <GettingHere options={data.gettingHere} name={data.name} />
+      <Seasons seasons={data.seasons} city={data.city} gallery={data.gallery} />
+      <GettingHere
+        options={data.gettingHere}
+        name={data.name}
+        mapEmbedUrl={data.mapEmbedUrl}
+      />
       <Amenities amenities={data.amenities} />
       <Policies policies={data.policies} />
       <FAQ faqs={data.faqs} />
@@ -63,7 +67,6 @@ export default function Home() {
         phone={data.phone}
         email={data.email}
         socialLinks={data.socialLinks}
-        mapEmbedUrl={data.mapEmbedUrl}
       />
     </main>
   );

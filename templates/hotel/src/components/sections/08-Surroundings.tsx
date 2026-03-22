@@ -1,79 +1,74 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useRef } from "react";
+import { motion, useInView } from "framer-motion";
 import type { NearbyAttraction } from "@/data/sample";
 
 interface SurroundingsProps {
   attractions: NearbyAttraction[];
   city: string;
+  mapEmbedUrl: string;
 }
 
-function CategoryIcon({ category }: { category: string }) {
-  const colors: Record<string, string> = {
-    Landmark: "bg-gold/10 text-gold",
-    Culture: "bg-charcoal/5 text-charcoal",
-    Spiritual: "bg-gold/10 text-gold-dark",
-    Nature: "bg-green-50 text-green-800",
-  };
+export function Surroundings({ attractions, city, mapEmbedUrl }: SurroundingsProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-80px" });
 
   return (
-    <span
-      className={`rounded-full px-3 py-1 text-[10px] font-medium tracking-wider uppercase ${
-        colors[category] || colors.Landmark
-      }`}
-    >
-      {category}
-    </span>
-  );
-}
+    <section ref={ref} className="bg-white py-32 lg:py-40">
+      <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[80vh]">
+        <div className="relative bg-linen overflow-hidden h-[50vh] lg:h-auto">
+          <iframe
+            src={mapEmbedUrl}
+            className="absolute inset-0 w-full h-full border-0"
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            title={`Map of ${city}`}
+            style={{ filter: "grayscale(0.6) contrast(1.1) sepia(0.15)" }}
+          />
+        </div>
 
-export function Surroundings({ attractions, city }: SurroundingsProps) {
-  return (
-    <section className="bg-white py-24 md:py-32">
-      <div className="mx-auto max-w-6xl px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-16 text-center"
-        >
-          <h2 className="font-serif text-sm font-medium tracking-[0.3em] uppercase text-gold">
-            The Surroundings
-          </h2>
-          <p className="mt-4 font-serif text-3xl font-light text-charcoal md:text-4xl">
-            Discover {city}
-          </p>
-        </motion.div>
+        <div className="px-8 lg:px-16 py-16 lg:py-24">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={isInView ? { opacity: 1 } : {}}
+            transition={{ duration: 1 }}
+          >
+            <p className="font-label text-gold text-xs mb-4">Discover</p>
+            <h2 className="font-serif text-[clamp(1.8rem,3vw,2.5rem)] text-charcoal font-light mb-12">
+              The Surroundings
+            </h2>
+          </motion.div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {attractions.map((attraction, i) => (
-            <motion.div
-              key={attraction.name}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{
-                duration: 0.9,
-                ease: [0.16, 1, 0.3, 1],
-                delay: i * 0.08,
-              }}
-              className="border border-warm-gray-dark p-8 transition-colors duration-500 hover:border-gold/40"
-            >
-              <div className="flex items-start justify-between">
-                <h3 className="font-serif text-xl font-light text-charcoal">
-                  {attraction.name}
-                </h3>
-                <CategoryIcon category={attraction.category} />
-              </div>
-              <p className="mt-4 text-sm leading-relaxed text-charcoal-light">
-                {attraction.description}
-              </p>
-              <p className="mt-4 text-xs tracking-wider text-gold">
-                {attraction.distance}
-              </p>
-            </motion.div>
-          ))}
+          <div className="space-y-0">
+            {attractions.map((place, i) => (
+              <motion.div
+                key={place.name}
+                className="py-5 border-b border-gold/10"
+                initial={{ opacity: 0, x: 30 }}
+                animate={isInView ? { opacity: 1, x: 0 } : {}}
+                transition={{
+                  duration: 0.8,
+                  delay: i * 0.12,
+                  ease: [0.16, 1, 0.3, 1],
+                }}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h4 className="font-serif text-lg text-charcoal mb-1">
+                      {place.name}
+                    </h4>
+                    <p className="text-warm/60 text-sm leading-relaxed">
+                      {place.description}
+                    </p>
+                  </div>
+                  <span className="font-label text-gold text-xs whitespace-nowrap mt-1">
+                    {place.distance}
+                  </span>
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </div>
     </section>

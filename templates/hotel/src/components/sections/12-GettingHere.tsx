@@ -1,94 +1,75 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useRef } from "react";
+import { motion, useInView } from "framer-motion";
 import type { TransportOption } from "@/data/sample";
 
 interface GettingHereProps {
   options: TransportOption[];
   name: string;
+  mapEmbedUrl: string;
 }
 
-function ModeIcon({ mode }: { mode: string }) {
-  const icons: Record<string, React.ReactNode> = {
-    Drive: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" className="h-5 w-5">
-        <rect x="3" y="8" width="18" height="8" rx="2" />
-        <circle cx="7" cy="16" r="1.5" />
-        <circle cx="17" cy="16" r="1.5" />
-        <path d="M5 8l2-4h10l2 4" />
-      </svg>
-    ),
-    Helicopter: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" className="h-5 w-5">
-        <path d="M4 6h16" />
-        <path d="M12 6v5" />
-        <ellipse cx="12" cy="14" rx="5" ry="3" />
-        <path d="M17 14l3 4" />
-        <path d="M7 14L4 18" />
-      </svg>
-    ),
-  };
+export function GettingHere({ options, name, mapEmbedUrl }: GettingHereProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   return (
-    <div className="text-gold">
-      {icons[mode] || icons.Drive}
-    </div>
-  );
-}
-
-export function GettingHere({ options, name }: GettingHereProps) {
-  return (
-    <section className="bg-white py-24 md:py-32">
-      <div className="mx-auto max-w-4xl px-6">
+    <section ref={ref} className="bg-ivory py-32 lg:py-40 px-8">
+      <div className="max-w-3xl mx-auto text-center">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
+          initial={{ opacity: 0, y: 30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-16 text-center"
         >
-          <h2 className="font-serif text-sm font-medium tracking-[0.3em] uppercase text-gold">
+          <p className="font-label text-gold text-xs mb-4">Arrive</p>
+          <h2 className="font-serif text-[clamp(1.8rem,3vw,2.5rem)] text-charcoal font-light mb-16">
             Getting Here
           </h2>
-          <p className="mt-4 font-serif text-3xl font-light text-charcoal md:text-4xl">
-            Your journey to {name}
-          </p>
         </motion.div>
 
         <div className="space-y-8">
           {options.map((option, i) => (
             <motion.div
               key={option.from}
+              className="text-center"
               initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{
-                duration: 0.9,
+                duration: 0.8,
+                delay: 0.2 + i * 0.15,
                 ease: [0.16, 1, 0.3, 1],
-                delay: i * 0.08,
               }}
-              className="flex gap-6 border-b border-warm-gray-dark pb-8"
             >
-              <div className="mt-1 shrink-0">
-                <ModeIcon mode={option.mode} />
-              </div>
-
-              <div className="flex-1">
-                <div className="flex flex-col gap-1 md:flex-row md:items-baseline md:gap-4">
-                  <h3 className="font-serif text-lg font-light text-charcoal">
-                    {option.from}
-                  </h3>
-                  <span className="text-xs tracking-wider text-gold">
-                    {option.mode} &middot; {option.duration}
-                  </span>
-                </div>
-                <p className="mt-2 text-sm leading-relaxed text-charcoal-light">
-                  {option.details}
-                </p>
-              </div>
+              <p className="font-serif text-[clamp(1.2rem,2vw,1.6rem)] text-charcoal">
+                From {option.from}
+                <span className="text-gold mx-3">:</span>
+                {option.duration}
+                <span className="text-warm/40 text-sm ml-3">by {option.mode.toLowerCase()}</span>
+              </p>
+              {i < options.length - 1 && (
+                <div className="gold-line mx-auto mt-8" />
+              )}
             </motion.div>
           ))}
         </div>
+
+        <motion.div
+          className="mt-20 overflow-hidden rounded-sm"
+          style={{ height: "300px" }}
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ duration: 1, delay: 0.6 }}
+        >
+          <iframe
+            src={mapEmbedUrl}
+            className="w-full h-full border-0"
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            title={`Directions to ${name}`}
+            style={{ filter: "grayscale(0.5) sepia(0.1) contrast(1.1)" }}
+          />
+        </motion.div>
       </div>
     </section>
   );

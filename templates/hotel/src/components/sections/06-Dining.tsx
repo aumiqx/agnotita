@@ -1,6 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useRef } from "react";
+import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import type { Restaurant } from "@/data/sample";
 
 interface DiningProps {
@@ -8,72 +9,76 @@ interface DiningProps {
 }
 
 export function Dining({ restaurant }: DiningProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  const textRef = useRef<HTMLDivElement>(null);
+  const isInView = useInView(textRef, { once: true, margin: "-100px" });
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start end", "end start"],
+  });
+  const imgScale = useTransform(scrollYProgress, [0, 1], [1, 1.15]);
+
   return (
-    <section className="bg-white py-24 md:py-32">
-      <div className="mx-auto max-w-7xl px-6">
-        <div className="flex flex-col gap-12 md:flex-row md:items-center md:gap-16">
-          <motion.div
-            initial={{ opacity: 0, x: -40 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-50px" }}
-            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-            className="md:w-1/2"
-          >
-            <div className="overflow-hidden">
-              <img
-                src={restaurant.image}
-                alt={restaurant.name}
-                className="h-80 w-full object-cover md:h-[550px]"
-              />
-            </div>
-          </motion.div>
+    <section ref={ref} className="relative min-h-screen overflow-hidden">
+      <motion.div className="absolute inset-0" style={{ scale: imgScale }}>
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url(${restaurant.image})` }}
+        />
+        <div className="absolute inset-0 bg-black/40" />
+      </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, x: 40 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-50px" }}
-            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
-            className="md:w-1/2"
-          >
-            <h2 className="font-serif text-sm font-medium tracking-[0.3em] uppercase text-gold">
-              Dining
-            </h2>
-            <h3 className="mt-4 font-serif text-3xl font-light text-charcoal md:text-4xl">
-              {restaurant.name}
-            </h3>
-            <p className="mt-2 text-xs tracking-wider text-charcoal-light uppercase">
-              {restaurant.cuisine} &middot; {restaurant.hours}
-            </p>
+      <div
+        ref={textRef}
+        className="relative z-10 flex flex-col items-center justify-center min-h-screen px-8 py-32 text-center"
+      >
+        <motion.p
+          className="font-label text-gold-light text-xs mb-6"
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ duration: 1, delay: 0.2 }}
+        >
+          {restaurant.hours}
+        </motion.p>
 
-            <p className="mt-8 text-sm leading-relaxed text-charcoal-light">
-              {restaurant.description}
-            </p>
+        <motion.h2
+          className="font-serif text-white text-[clamp(2.5rem,5vw,4rem)] font-light mb-8"
+          initial={{ opacity: 0, y: 30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+        >
+          {restaurant.name}
+        </motion.h2>
 
-            <div className="mt-10">
-              <h4 className="text-xs font-medium tracking-[0.2em] uppercase text-charcoal">
-                Signature Dishes
-              </h4>
-              <ul className="mt-4 space-y-3">
-                {restaurant.signatureDishes.map((dish) => (
-                  <li
-                    key={dish}
-                    className="flex items-center gap-3 text-sm text-charcoal-light"
-                  >
-                    <span className="h-px w-4 bg-gold" />
-                    {dish}
-                  </li>
-                ))}
-              </ul>
-            </div>
+        <motion.p
+          className="font-serif text-white/80 italic text-xl mb-4"
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ duration: 1, delay: 0.4 }}
+        >
+          {restaurant.cuisine}
+        </motion.p>
 
-            <a
-              href="#reserve"
-              className="mt-10 inline-block border border-charcoal px-8 py-3 text-xs font-medium tracking-[0.2em] uppercase text-charcoal transition-all duration-500 hover:border-gold hover:bg-gold hover:text-white"
-            >
-              Reserve a Table
-            </a>
-          </motion.div>
-        </div>
+        <motion.p
+          className="text-white/60 text-base max-w-xl leading-relaxed mb-12"
+          initial={{ opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 1, delay: 0.6 }}
+        >
+          {restaurant.description}
+        </motion.p>
+
+        <motion.a
+          href="#reserve"
+          className="text-gold font-serif text-lg italic relative group"
+          data-cursor-hover
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ duration: 1, delay: 0.8 }}
+        >
+          Reserve a Table
+          <span className="absolute bottom-0 left-0 w-0 h-px bg-gold group-hover:w-full transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]" />
+        </motion.a>
       </div>
     </section>
   );

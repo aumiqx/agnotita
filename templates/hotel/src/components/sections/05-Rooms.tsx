@@ -1,96 +1,82 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useRef } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
 import type { Room } from "@/data/sample";
 
 interface RoomsProps {
   rooms: Room[];
 }
 
-export function Rooms({ rooms }: RoomsProps) {
+function RoomSlide({ room, index }: { room: Room; index: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start end", "end start"],
+  });
+  const imgScale = useTransform(scrollYProgress, [0, 0.5, 1], [1.1, 1, 1.05]);
+  const contentOpacity = useTransform(scrollYProgress, [0.1, 0.3, 0.7, 0.9], [0, 1, 1, 0]);
+  const contentY = useTransform(scrollYProgress, [0.1, 0.3, 0.7, 0.9], [60, 0, 0, -60]);
+
+  const formatPrice = (price: number, currency: string) => {
+    if (currency === "INR") return `\u20B9${price.toLocaleString("en-IN")}`;
+    return `${currency} ${price}`;
+  };
+
   return (
-    <section className="bg-ivory py-24 md:py-32">
-      <div className="mx-auto max-w-7xl px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-20 text-center"
-        >
-          <h2 className="font-serif text-sm font-medium tracking-[0.3em] uppercase text-gold">
-            Rooms & Suites
-          </h2>
-          <p className="mt-4 font-serif text-3xl font-light text-charcoal md:text-4xl">
-            Your private sanctuary
-          </p>
-        </motion.div>
+    <section ref={ref} className="relative h-screen w-full overflow-hidden">
+      <motion.div className="absolute inset-0" style={{ scale: imgScale }}>
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url(${room.image})` }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+      </motion.div>
 
-        <div className="space-y-24">
-          {rooms.map((room, i) => (
-            <motion.div
-              key={room.name}
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{
-                duration: 1,
-                ease: [0.16, 1, 0.3, 1],
-              }}
-              className={`flex flex-col gap-8 md:flex-row md:items-center md:gap-16 ${
-                i % 2 === 1 ? "md:flex-row-reverse" : ""
-              }`}
+      <motion.div
+        className="relative z-10 flex flex-col justify-end h-full px-8 lg:px-20 pb-20"
+        style={{ opacity: contentOpacity, y: contentY }}
+      >
+        <p className="font-label text-gold-light text-xs mb-4">
+          Room {String(index + 1).padStart(2, "0")}
+        </p>
+        <h3 className="font-serif text-white text-[clamp(2rem,4vw,3.5rem)] font-light mb-4 max-w-xl">
+          {room.name}
+        </h3>
+        <p className="text-white/70 text-sm max-w-md mb-6 leading-relaxed">
+          {room.description}
+        </p>
+
+        <div className="flex items-center gap-8">
+          <span className="font-serif text-gold text-2xl">
+            {formatPrice(room.price, room.currency)}
+            <span className="text-white/40 text-sm ml-2">/ night</span>
+          </span>
+          <span className="text-white/40 text-xs font-label">{room.size}</span>
+          <span className="text-white/40 text-xs font-label">{room.capacity}</span>
+        </div>
+
+        <div className="flex flex-wrap gap-3 mt-6">
+          {room.amenities.slice(0, 4).map((amenity) => (
+            <span
+              key={amenity}
+              className="text-white/50 text-xs px-3 py-1 border border-white/10 rounded-full"
             >
-              <div className="md:w-1/2">
-                <div className="overflow-hidden">
-                  <img
-                    src={room.image}
-                    alt={room.name}
-                    className="h-80 w-full object-cover transition-transform duration-700 hover:scale-105 md:h-[460px]"
-                  />
-                </div>
-              </div>
-
-              <div className="md:w-1/2">
-                <h3 className="font-serif text-2xl font-light text-charcoal md:text-3xl">
-                  {room.name}
-                </h3>
-
-                <div className="mt-3 flex items-baseline gap-4">
-                  <span className="font-serif text-2xl text-gold">
-                    {room.currency === "INR" ? "\u20B9" : "$"}
-                    {room.price.toLocaleString("en-IN")}
-                  </span>
-                  <span className="text-xs tracking-wider text-charcoal-light uppercase">
-                    per night
-                  </span>
-                </div>
-
-                <p className="mt-6 text-sm leading-relaxed text-charcoal-light">
-                  {room.description}
-                </p>
-
-                <div className="mt-6 flex gap-6 text-xs text-charcoal-light">
-                  <span>{room.capacity}</span>
-                  <span className="text-gold">&middot;</span>
-                  <span>{room.size}</span>
-                </div>
-
-                <div className="mt-6 flex flex-wrap gap-2">
-                  {room.amenities.map((amenity) => (
-                    <span
-                      key={amenity}
-                      className="border border-warm-gray-dark px-3 py-1.5 text-xs text-charcoal-light"
-                    >
-                      {amenity}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
+              {amenity}
+            </span>
           ))}
         </div>
-      </div>
+      </motion.div>
     </section>
+  );
+}
+
+export function Rooms({ rooms }: RoomsProps) {
+  return (
+    <div>
+      {rooms.map((room, i) => (
+        <RoomSlide key={room.name} room={room} index={i} />
+      ))}
+    </div>
   );
 }

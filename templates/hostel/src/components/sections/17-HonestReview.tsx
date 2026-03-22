@@ -7,79 +7,86 @@ interface HonestReviewProps {
   honestReviews: HostelReview[];
 }
 
+const hostelResponses: Record<number, string> = {
+  0: "We hear you. We've upgraded our solar heater system and added a backup electric heater. Mornings should be toasty now.",
+  1: "Fair point. We've installed solar path lights on the uphill stretch and added offline map QR codes at check-in. Wi-Fi upgrade is next on the list.",
+  2: "Honestly, yes. We're a hostel, not a resort. But we promise the experience is worth it. Come with the right expectations and you won't be disappointed.",
+};
+
 export function HonestReview({ honestReviews }: HonestReviewProps) {
   return (
-    <section className="py-20 sm:py-28 px-6 bg-cream">
+    <section className="py-24 sm:py-32 px-6 bg-cream">
       <div className="max-w-4xl mx-auto">
-        <motion.p
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-          viewport={{ once: true }}
-          className="text-sm tracking-[0.3em] uppercase text-warm-gray mb-4"
-        >
-          honest review
-        </motion.p>
-
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="text-4xl sm:text-5xl mb-4"
-          style={{ fontFamily: "var(--font-caveat)" }}
-        >
+        <span className="font-mono text-xs tracking-[0.3em] uppercase text-warm-gray block mb-4">
+          Honest Review
+        </span>
+        <h2 className="font-handwritten text-5xl sm:text-6xl text-charcoal mb-2">
           We&apos;re not perfect
-        </motion.h2>
+        </h2>
+        <p className="font-handwritten text-2xl text-terracotta/60 mb-16">
+          (yet)
+        </p>
 
-        <motion.p
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          viewport={{ once: true }}
-          className="text-warm-gray mb-12 text-base max-w-lg"
-        >
-          Transparency matters to us. Here are some things guests wish were
-          better. We&apos;re working on it.
-        </motion.p>
-
-        <div className="space-y-5">
+        <div className="space-y-8">
           {honestReviews.map((review, i) => (
             <motion.div
               key={review.author}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: i * 0.12 }}
               viewport={{ once: true }}
-              className="bg-white rounded-sm p-5 sm:p-6 border-l-3 border-bark"
+              transition={{ duration: 0.5, delay: i * 0.15 }}
+              className="relative"
             >
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-lg">{review.flag}</span>
-                <span className="text-sm font-medium text-charcoal">
-                  {review.author}
-                </span>
-                <span className="text-xs text-warm-gray">
-                  &middot; {review.country}
-                </span>
-                <div className="ml-auto flex gap-0.5">
-                  {Array.from({ length: 5 }).map((_, starIndex) => (
-                    <span
-                      key={starIndex}
-                      className={`text-xs ${
-                        starIndex < review.rating
-                          ? "text-terracotta"
-                          : "text-sand"
-                      }`}
-                    >
-                      {"\u2605"}
+              {/* Guest review */}
+              <div className="bg-white rounded-sm p-6 sm:p-8 border-l-3 border-bark/40">
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="text-xl">{review.flag}</span>
+                  <div>
+                    <span className="font-medium text-sm text-charcoal">
+                      {review.author}
                     </span>
-                  ))}
+                    <span className="text-xs text-warm-gray ml-2">
+                      {review.country}
+                    </span>
+                  </div>
+                  <div className="ml-auto flex gap-0.5">
+                    {Array.from({ length: 5 }).map((_, starIndex) => (
+                      <span
+                        key={starIndex}
+                        className={`text-xs ${
+                          starIndex < review.rating
+                            ? "text-terracotta"
+                            : "text-sand"
+                        }`}
+                      >
+                        &#9733;
+                      </span>
+                    ))}
+                  </div>
                 </div>
+
+                <p className="font-serif text-base text-charcoal/70 leading-relaxed italic">
+                  &ldquo;{review.text}&rdquo;
+                </p>
               </div>
 
-              <p className="text-warm-gray text-sm sm:text-base leading-relaxed">
-                {review.text}
-              </p>
+              {/* Hostel response */}
+              {hostelResponses[i] && (
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: i * 0.15 + 0.3 }}
+                  className="ml-8 sm:ml-12 mt-3 bg-terracotta/5 border-l-3 border-terracotta/30 rounded-sm p-5"
+                >
+                  <span className="font-mono text-[10px] tracking-wider text-terracotta uppercase block mb-2">
+                    Our Response
+                  </span>
+                  <p className="font-serif text-sm text-charcoal/70 leading-relaxed">
+                    {hostelResponses[i]}
+                  </p>
+                </motion.div>
+              )}
             </motion.div>
           ))}
         </div>

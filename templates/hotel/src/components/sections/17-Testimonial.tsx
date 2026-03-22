@@ -1,6 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useRef } from "react";
+import { motion, useInView } from "framer-motion";
 import type { Review } from "@/data/sample";
 
 interface TestimonialHighlightProps {
@@ -8,39 +9,48 @@ interface TestimonialHighlightProps {
 }
 
 export function TestimonialHighlight({ review }: TestimonialHighlightProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
+
   return (
-    <section className="bg-linen py-28 md:py-36">
-      <div className="mx-auto max-w-4xl px-6 text-center">
+    <section
+      ref={ref}
+      className="bg-linen"
+      style={{ padding: "clamp(100px, 15vh, 200px) 24px" }}
+    >
+      <div className="max-w-4xl mx-auto text-center">
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+          className="flex justify-center gap-1 mb-10"
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ duration: 1 }}
         >
-          <div className="flex items-center justify-center gap-1">
-            {Array.from({ length: review.rating }).map((_, i) => (
-              <span key={i} className="text-gold text-xl">
-                &#9733;
-              </span>
-            ))}
-          </div>
+          {Array.from({ length: review.rating }).map((_, i) => (
+            <span key={i} className="text-gold text-lg">
+              &#9733;
+            </span>
+          ))}
+        </motion.div>
 
-          <span className="mt-6 block font-serif text-7xl leading-none text-gold/30 md:text-8xl">
-            &ldquo;
-          </span>
+        <motion.blockquote
+          className="font-serif italic text-[clamp(1.3rem,3vw,2.2rem)] text-charcoal leading-relaxed mb-12"
+          initial={{ opacity: 0, y: 30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+        >
+          &ldquo;{review.text}&rdquo;
+        </motion.blockquote>
 
-          <p className="mt-4 font-serif text-2xl font-light leading-relaxed text-charcoal md:text-3xl">
-            {review.text}
-          </p>
-
-          <div className="mx-auto mt-10 h-px w-16 bg-gold" />
-
-          <p className="mt-6 font-serif text-base italic text-charcoal">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ duration: 1, delay: 0.5 }}
+        >
+          <div className="gold-line mx-auto mb-6" />
+          <p className="font-label text-warm text-xs">
             {review.name}
           </p>
-          <p className="mt-1 text-xs tracking-wider text-charcoal-light">
-            {review.location}
-          </p>
+          <p className="text-warm/40 text-xs mt-1">{review.location}</p>
         </motion.div>
       </div>
     </section>

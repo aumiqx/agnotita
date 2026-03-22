@@ -1,6 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useRef } from "react";
+import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import type { DayItinerary } from "@/data/sample";
 
 interface ADayHereProps {
@@ -8,100 +9,82 @@ interface ADayHereProps {
   name: string;
 }
 
-function PeriodBadge({ period }: { period: DayItinerary["period"] }) {
-  const styles: Record<string, string> = {
-    morning: "bg-gold/10 text-gold-dark",
-    afternoon: "bg-ivory text-charcoal",
-    evening: "bg-charcoal/5 text-charcoal-light",
-  };
+function TimelineItem({ item, index }: { item: DayItinerary; index: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-60px" });
 
   return (
-    <span
-      className={`rounded-full px-3 py-0.5 text-[10px] font-medium tracking-wider uppercase ${styles[period]}`}
+    <motion.div
+      ref={ref}
+      className="grid grid-cols-[100px_1px_1fr] lg:grid-cols-[140px_1px_1fr] gap-6 lg:gap-10 items-start"
+      initial={{ opacity: 0 }}
+      animate={isInView ? { opacity: 1 } : {}}
+      transition={{ duration: 0.8, delay: index * 0.08 }}
     >
-      {period}
-    </span>
+      <div className="text-right">
+        <motion.p
+          className="font-serif text-[clamp(1.4rem,2.5vw,2rem)] text-gold"
+          initial={{ opacity: 0, x: -20 }}
+          animate={isInView ? { opacity: 1, x: 0 } : {}}
+          transition={{ duration: 0.8, delay: 0.1 + index * 0.08, ease: [0.16, 1, 0.3, 1] }}
+        >
+          {item.time}
+        </motion.p>
+      </div>
+
+      <div className="relative flex flex-col items-center">
+        <motion.div
+          className="w-2 h-2 rounded-full border border-gold bg-ivory flex-shrink-0 mt-3"
+          initial={{ scale: 0 }}
+          animate={isInView ? { scale: 1 } : {}}
+          transition={{ duration: 0.4, delay: 0.2 + index * 0.08 }}
+        />
+        <motion.div
+          className="w-px bg-gold/20 flex-1 min-h-[60px]"
+          initial={{ scaleY: 0, originY: 0 }}
+          animate={isInView ? { scaleY: 1 } : {}}
+          transition={{ duration: 0.8, delay: 0.3 + index * 0.08 }}
+        />
+      </div>
+
+      <motion.div
+        className="pb-12"
+        initial={{ opacity: 0, x: 20 }}
+        animate={isInView ? { opacity: 1, x: 0 } : {}}
+        transition={{ duration: 0.8, delay: 0.15 + index * 0.08, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <h4 className="font-serif text-lg text-charcoal mb-2">{item.title}</h4>
+        <p className="text-warm/60 text-sm leading-relaxed max-w-md">
+          {item.description}
+        </p>
+      </motion.div>
+    </motion.div>
   );
 }
 
 export function ADayHere({ itinerary, name }: ADayHereProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
+
   return (
-    <section className="bg-white py-24 md:py-32">
-      <div className="mx-auto max-w-3xl px-6">
+    <section ref={ref} className="bg-ivory py-32 lg:py-40 px-8">
+      <div className="max-w-3xl mx-auto">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
+          className="text-center mb-20"
+          initial={{ opacity: 0, y: 30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-16 text-center"
         >
-          <h2 className="font-serif text-sm font-medium tracking-[0.3em] uppercase text-gold">
-            A Day at {name}
+          <p className="font-label text-gold text-xs mb-4">A Day At</p>
+          <h2 className="font-serif text-[clamp(1.8rem,3vw,2.5rem)] text-charcoal font-light">
+            {name}
           </h2>
-          <p className="mt-4 font-serif text-3xl font-light text-charcoal">
-            A curated rhythm
-          </p>
         </motion.div>
 
-        <div className="relative">
-          <div className="absolute left-6 top-0 h-full w-px bg-gold/20 md:left-1/2 md:-translate-x-px" />
-
-          <div className="space-y-12">
-            {itinerary.map((item, i) => (
-              <motion.div
-                key={item.time}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{
-                  duration: 0.9,
-                  ease: [0.16, 1, 0.3, 1],
-                  delay: i * 0.05,
-                }}
-                className="relative pl-16 md:pl-0"
-              >
-                <div
-                  className={`md:flex md:items-start md:gap-12 ${
-                    i % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"
-                  }`}
-                >
-                  <div
-                    className={`md:w-1/2 ${
-                      i % 2 === 0 ? "md:text-right" : "md:text-left"
-                    }`}
-                  >
-                    <span className="font-serif text-lg text-gold">
-                      {item.time}
-                    </span>
-                  </div>
-
-                  <div className="absolute left-4 top-1 h-3 w-3 rounded-full border-2 border-gold bg-white md:static md:mx-0 md:shrink-0" />
-
-                  <div
-                    className={`mt-1 md:mt-0 md:w-1/2 ${
-                      i % 2 === 0 ? "md:text-left" : "md:text-right"
-                    }`}
-                  >
-                    <div
-                      className={`flex items-center gap-3 ${
-                        i % 2 === 0
-                          ? "md:justify-start"
-                          : "md:flex-row-reverse md:justify-start"
-                      }`}
-                    >
-                      <h3 className="font-serif text-lg font-light text-charcoal">
-                        {item.title}
-                      </h3>
-                      <PeriodBadge period={item.period} />
-                    </div>
-                    <p className="mt-2 text-sm leading-relaxed text-charcoal-light">
-                      {item.description}
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+        <div>
+          {itinerary.map((item, i) => (
+            <TimelineItem key={item.time} item={item} index={i} />
+          ))}
         </div>
       </div>
     </section>

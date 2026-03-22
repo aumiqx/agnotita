@@ -1,22 +1,25 @@
 @import "tailwindcss";
 
 @theme {
-  --color-cream: #FAFAF5;
-  --color-cream-dark: #F0EDE4;
-  --color-terracotta: #D4A574;
-  --color-terracotta-dark: #B8895A;
-  --color-forest: #2D5016;
-  --color-forest-light: #3D6B1F;
-  --color-bark: #8B7355;
+  --color-cream: #FDFBF7;
+  --color-cream-dark: #F0E6D3;
+  --color-sand: #F0E6D3;
+  --color-terracotta: #C17B5E;
+  --color-terracotta-dark: #A86548;
+  --color-forest: #3D6B4F;
+  --color-forest-light: #4A7D5E;
+  --color-bark: #5C4033;
   --color-charcoal: #2C2C2C;
-  --color-warm-gray: #6B6560;
-  --color-sand: #E8DFD0;
+  --color-warm-gray: #8B8178;
+  --color-parchment: #F5EFE0;
 
   --font-heading: "Caveat", cursive;
+  --font-serif: "Playfair Display", serif;
   --font-body: "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
 }
 
-/* Base styles */
+/* Base */
 html {
   scroll-behavior: smooth;
 }
@@ -27,27 +30,57 @@ body {
   color: var(--color-charcoal);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  cursor: default;
 }
 
-/* Handwritten heading utility */
+::selection {
+  background-color: var(--color-terracotta);
+  color: white;
+}
+
+/* Grain overlay — applied globally */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+
+/* Typography utilities */
 .font-handwritten {
   font-family: var(--font-heading);
 }
 
-/* Hand-drawn border effect */
-.hand-drawn-border {
-  border: 2px solid var(--color-charcoal);
-  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+.font-serif {
+  font-family: var(--font-serif);
 }
 
-/* Postcard style */
-.postcard {
-  background: white;
-  border: 1px solid var(--color-sand);
-  border-radius: 2px;
-  box-shadow:
-    2px 2px 0 var(--color-sand),
-    4px 4px 0 rgba(0, 0, 0, 0.03);
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+/* Paper texture background */
+.paper-texture {
+  background-color: var(--color-parchment);
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.04' numOctaves='5' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paper)' opacity='0.03'/%3E%3C/svg%3E");
+}
+
+/* Torn paper edge (top) */
+.torn-edge-top {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 1200 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 20 Q30 0 60 12 Q90 20 120 8 Q150 0 180 14 Q210 20 240 6 Q270 0 300 16 Q330 20 360 4 Q390 0 420 18 Q450 20 480 10 Q510 0 540 14 Q570 20 600 8 Q630 0 660 16 Q690 20 720 6 Q750 0 780 12 Q810 20 840 4 Q870 0 900 18 Q930 20 960 10 Q990 0 1020 14 Q1050 20 1080 8 Q1110 0 1140 16 Q1170 20 1200 6 L1200 20 Z' fill='black'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 1200 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 20 Q30 0 60 12 Q90 20 120 8 Q150 0 180 14 Q210 20 240 6 Q270 0 300 16 Q330 20 360 4 Q390 0 420 18 Q450 20 480 10 Q510 0 540 14 Q570 20 600 8 Q630 0 660 16 Q690 20 720 6 Q750 0 780 12 Q810 20 840 4 Q870 0 900 18 Q930 20 960 10 Q990 0 1020 14 Q1050 20 1080 8 Q1110 0 1140 16 Q1170 20 1200 6 L1200 20 Z' fill='black'/%3E%3C/svg%3E");
+  -webkit-mask-size: 100% 20px;
+  mask-size: 100% 20px;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: top;
+  mask-position: top;
+  padding-top: 20px;
 }
 
 /* Stamp effect */
@@ -58,7 +91,24 @@ body {
   transform: rotate(-3deg);
 }
 
-/* Scrollbar styling */
+/* Passport stamp */
+@keyframes stamp-press {
+  0% { transform: scale(2) rotate(-5deg); opacity: 0; }
+  60% { transform: scale(0.95) rotate(-3deg); opacity: 1; }
+  100% { transform: scale(1) rotate(-3deg); opacity: 1; }
+}
+
+.animate-stamp {
+  animation: stamp-press 0.5s ease-out forwards;
+}
+
+/* Typewriter */
+@keyframes typewriter-cursor {
+  0%, 100% { border-color: transparent; }
+  50% { border-color: var(--color-charcoal); }
+}
+
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -73,7 +123,7 @@ body {
   border-radius: 3px;
 }
 
-/* Hide scrollbar for horizontal scroll sections */
+/* Hide scrollbar */
 .hide-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -83,23 +133,17 @@ body {
   display: none;
 }
 
-/* Passport stamp animation */
-@keyframes stamp-press {
-  0% { transform: scale(2) rotate(-5deg); opacity: 0; }
-  60% { transform: scale(0.95) rotate(-3deg); opacity: 1; }
-  100% { transform: scale(1) rotate(-3deg); opacity: 1; }
+/* Photo cursor */
+.photo-cursor {
+  cursor: crosshair;
 }
 
-.animate-stamp {
-  animation: stamp-press 0.5s ease-out forwards;
-}
-
-/* Dashed line separator */
+/* Dashed line */
 .dashed-line {
   border-top: 2px dashed var(--color-sand);
 }
 
-/* Journal line background */
+/* Journal lines */
 .journal-lines {
   background-image: repeating-linear-gradient(
     transparent,
@@ -107,4 +151,56 @@ body {
     var(--color-sand) 31px,
     var(--color-sand) 32px
   );
+}
+
+/* Wax seal */
+.wax-seal {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #d4564e, #a03028);
+  box-shadow:
+    inset 0 2px 4px rgba(255, 255, 255, 0.3),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.3),
+    0 4px 12px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Pulse CTA */
+@keyframes gentle-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(193, 123, 94, 0.4); }
+  50% { box-shadow: 0 0 0 12px rgba(193, 123, 94, 0); }
+}
+
+.pulse-cta {
+  animation: gentle-pulse 2.5s ease-in-out infinite;
+}
+
+/* Cork board texture */
+.cork-texture {
+  background-color: #c4956a;
+  background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='cork'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23cork)' opacity='0.08'/%3E%3C/svg%3E");
+}
+
+/* Horizontal scroll snap */
+.scroll-snap-x {
+  scroll-snap-type: x mandatory;
+}
+
+.scroll-snap-center {
+  scroll-snap-align: center;
+}
+
+/* Radial chart segment */
+@keyframes radial-grow {
+  from { transform: scale(0); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* Hand-drawn border */
+.hand-drawn-border {
+  border: 2px solid var(--color-charcoal);
+  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
 }

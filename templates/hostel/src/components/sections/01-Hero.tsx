@@ -20,102 +20,94 @@ export function Hero({
   reviewCount,
   heroImage,
   tagline,
-  bookingUrl,
 }: HeroProps) {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start start", "end start"],
   });
-  const y = useTransform(scrollYProgress, [0, 1], [0, 200]);
-  const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+
+  const photoScale = useTransform(scrollYProgress, [0, 1], [1, 1.3]);
+  const textY = useTransform(scrollYProgress, [0, 1], [0, -150]);
+  const textOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
 
   return (
     <section ref={ref} className="relative h-screen overflow-hidden">
-      <motion.div className="absolute inset-0" style={{ y }}>
+      {/* Ken Burns zoom background */}
+      <motion.div className="absolute inset-0" style={{ scale: photoScale }}>
         <div
-          className="absolute inset-0 bg-cover bg-center"
+          className="absolute inset-0 bg-cover bg-center photo-cursor"
           style={{ backgroundImage: `url(${heroImage})` }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/60" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/70" />
       </motion.div>
 
+      {/* Main content */}
       <motion.div
         className="relative z-10 flex h-full flex-col items-center justify-center px-6 text-center text-white"
-        style={{ opacity }}
+        style={{ y: textY, opacity: textOpacity }}
       >
+        {/* Passport stamp badge */}
         <motion.div
-          initial={{ opacity: 0, scale: 1.5, rotate: -5 }}
-          animate={{ opacity: 1, scale: 1, rotate: -3 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="mb-6 inline-block border-3 border-dashed border-terracotta rounded px-4 py-2"
+          initial={{ opacity: 0, scale: 2, rotate: -8 }}
+          animate={{ opacity: 1, scale: 1, rotate: -5 }}
+          transition={{ duration: 0.5, delay: 0.4, ease: "easeOut" }}
+          className="mb-8 border-3 border-dashed border-terracotta/80 rounded px-5 py-2.5 backdrop-blur-sm bg-black/10"
         >
-          <div className="flex items-center gap-2 text-sm font-medium tracking-wider uppercase">
-            <span className="text-terracotta">{"*".repeat(Math.floor(rating))}</span>
-            <span>{rating}</span>
-            <span className="text-white/70">/ {reviewCount} reviews</span>
+          <div className="flex items-center gap-3 font-mono text-xs tracking-[0.2em] uppercase">
+            <span className="text-terracotta font-bold text-sm">{rating}</span>
+            <span className="w-px h-3 bg-white/40" />
+            <span className="text-white/70">{reviewCount} reviews</span>
           </div>
         </motion.div>
 
+        {/* Massive handwritten name */}
         <motion.h1
-          initial={{ opacity: 0, y: 40 }}
+          initial={{ opacity: 0, y: 60 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.1 }}
-          className="font-handwritten text-6xl sm:text-7xl md:text-8xl lg:text-9xl leading-none mb-4"
-          style={{ fontFamily: "var(--font-caveat)" }}
+          transition={{ duration: 1, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+          className="font-handwritten leading-[0.85] mb-4 mix-blend-difference"
+          style={{
+            fontSize: "clamp(4rem, 12vw, 10rem)",
+          }}
         >
           {name}
         </motion.h1>
 
-        <motion.p
+        {/* City + tagline */}
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="text-lg sm:text-xl text-white/80 tracking-widest uppercase mb-2"
+          transition={{ duration: 0.8, delay: 0.5 }}
+          className="flex flex-col items-center gap-3"
         >
-          {city}
-        </motion.p>
-
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.6 }}
-          className="text-white/60 text-sm tracking-widest lowercase italic mb-10"
-        >
-          {tagline}
-        </motion.p>
-
-        <motion.a
-          href={bookingUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.8 }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="inline-block bg-terracotta hover:bg-terracotta-dark text-white px-8 py-4 text-lg font-medium tracking-wide rounded-sm transition-colors"
-        >
-          Book Your Bed
-        </motion.a>
+          <p className="font-serif text-xl sm:text-2xl tracking-[0.3em] uppercase text-white/80">
+            {city}
+          </p>
+          <div className="w-16 h-px bg-terracotta/60" />
+          <p className="font-handwritten text-xl text-white/50 italic">
+            {tagline}
+          </p>
+        </motion.div>
       </motion.div>
 
+      {/* Scroll prompt — handwritten */}
       <motion.div
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10"
-        animate={{ y: [0, 10, 0] }}
-        transition={{ duration: 2, repeat: Infinity }}
+        className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.5, duration: 1 }}
       >
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="white"
-          strokeWidth="2"
-          className="opacity-60"
+        <span className="font-handwritten text-white/50 text-lg">
+          scroll to explore
+        </span>
+        <motion.span
+          className="text-white/40 text-2xl"
+          animate={{ y: [0, 8, 0] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
         >
-          <path d="M12 5v14M5 12l7 7 7-7" />
-        </svg>
+          &#8595;
+        </motion.span>
       </motion.div>
     </section>
   );

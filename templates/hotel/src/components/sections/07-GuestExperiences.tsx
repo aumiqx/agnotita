@@ -1,75 +1,81 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { motion, AnimatePresence, useInView } from "framer-motion";
 import type { Review } from "@/data/sample";
 
 interface GuestExperiencesProps {
   reviews: Review[];
 }
 
-function Stars({ count }: { count: number }) {
-  return (
-    <div className="flex gap-1">
-      {Array.from({ length: count }).map((_, i) => (
-        <span key={i} className="text-gold text-sm">
-          &#9733;
-        </span>
-      ))}
-    </div>
-  );
-}
-
 export function GuestExperiences({ reviews }: GuestExperiencesProps) {
-  const featured = reviews.slice(0, 5);
+  const [current, setCurrent] = useState(0);
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
+
+  const next = useCallback(() => {
+    setCurrent((prev) => (prev + 1) % reviews.length);
+  }, [reviews.length]);
+
+  useEffect(() => {
+    const interval = setInterval(next, 8000);
+    return () => clearInterval(interval);
+  }, [next]);
+
+  const review = reviews[current];
 
   return (
-    <section className="bg-ivory py-24 md:py-32">
-      <div className="mx-auto max-w-5xl px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-16 text-center"
+    <section
+      ref={ref}
+      className="bg-ivory"
+      style={{ padding: "clamp(100px, 15vh, 200px) 24px" }}
+    >
+      <div className="max-w-4xl mx-auto text-center">
+        <motion.span
+          className="font-serif text-gold text-[6rem] leading-none block mb-4"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={isInView ? { opacity: 0.3, scale: 1 } : {}}
+          transition={{ duration: 1 }}
         >
-          <h2 className="font-serif text-sm font-medium tracking-[0.3em] uppercase text-gold">
-            Guest Experiences
-          </h2>
-          <p className="mt-4 font-serif text-3xl font-light text-charcoal">
-            In their words
-          </p>
-        </motion.div>
+          &ldquo;
+        </motion.span>
 
-        <div className="space-y-16">
-          {featured.map((review, i) => (
+        <div className="min-h-[200px] flex items-center justify-center">
+          <AnimatePresence mode="wait">
             <motion.div
-              key={review.name}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{
-                duration: 1,
-                ease: [0.16, 1, 0.3, 1],
-                delay: i * 0.05,
-              }}
+              key={current}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
               className="text-center"
             >
-              <span className="font-serif text-5xl leading-none text-gold/40">
-                &ldquo;
-              </span>
-              <p className="mx-auto mt-2 max-w-2xl font-serif text-lg font-light leading-relaxed text-charcoal md:text-xl">
+              <p className="font-serif italic text-[clamp(1.2rem,2.5vw,1.8rem)] text-charcoal leading-relaxed mb-10 max-w-3xl mx-auto">
                 {review.text}
               </p>
-              <div className="mt-6 flex flex-col items-center gap-2">
-                <Stars count={review.rating} />
-                <p className="font-serif text-sm italic text-charcoal">
-                  {review.name}
-                </p>
-                <p className="text-xs text-charcoal-light">
-                  {review.location}
-                </p>
-              </div>
+
+              <div className="gold-line mx-auto mb-6" />
+
+              <p className="font-label text-warm text-xs">
+                {review.name}
+              </p>
+              <p className="text-warm/50 text-xs mt-1">
+                {review.location}
+              </p>
             </motion.div>
+          </AnimatePresence>
+        </div>
+
+        <div className="flex justify-center gap-2 mt-12">
+          {reviews.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrent(i)}
+              className={`w-8 h-px transition-all duration-700 ${
+                i === current ? "bg-gold" : "bg-charcoal/15"
+              }`}
+              aria-label={`Review ${i + 1}`}
+            />
           ))}
         </div>
       </div>
